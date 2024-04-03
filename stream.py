@@ -1,11 +1,12 @@
-# Import statements
+
+import streamlit as st
 from pymongo import MongoClient
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from langchain_community.llms import GooglePalm
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
-import streamlit as st
+
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
@@ -71,20 +72,30 @@ def optimize_text_with_googlepalm(text):
         # Handle the NotImplementedError here
         print("GooglePalm is deprecated. Consider updating your code.")
         return text  # Returning the original text as a fallback
-# Example usage
-query_text = input("Enter your query: ")
-query_result = execute_mongodb_query(query_text)
-if query_result:
-    print("Most Similar Document:")
-    # Format the document information into a paragraph
-    document_paragraph = "Hello customer, welcome!\n\nWe have this amazing watch for you:\n\n"
-    for key, value in query_result.items():
-        if key != "embedding" and value is not None:
-            document_paragraph += f"{key.capitalize()}: {value}\n"
 
-    # Optimize the document paragraph using GooglePalm
-    optimized_result = optimize_text_with_googlepalm(document_paragraph)
-    print(optimized_result)
-else:
-    print("No documents found.")
+# Create a Streamlit app
+def main():
+    st.title("Text Classification")
 
+    # Get user input
+    query_text = st.text_input("Enter your query:")
+
+    # Execute MongoDB query
+    if st.button("Search"):
+        query_result = execute_mongodb_query(query_text)
+        if query_result:
+            st.subheader("Most Similar Document:")
+            # Format the document information into a paragraph
+            document_paragraph = "Hello customer, welcome!\n\nWe have this amazing watch for you:\n\n"
+            for key, value in query_result.items():
+                if key != "embedding" and value is not None:
+                    document_paragraph += f"{key.capitalize()}: {value}\n"
+
+            # Optimize the document paragraph using GooglePalm
+            optimized_result = optimize_text_with_googlepalm(document_paragraph)
+            st.write(optimized_result)
+        else:
+            st.write("No documents found.")
+
+if __name__ == "__main__":
+    main()
